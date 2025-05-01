@@ -35,6 +35,10 @@ class ApiService {
                 throw new Error(`API 請求失敗: ${response.status} ${response.statusText}`);
             }
             
+            // 處理無內容回應 (204 No Content)
+            if (response.status === 204) {
+                return;
+            }
             // 解析 JSON 回應
             return await response.json();
         } catch (error) {
