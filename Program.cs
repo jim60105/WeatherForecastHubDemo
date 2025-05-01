@@ -34,6 +34,13 @@ builder.Services.AddHttpClient();
 
 var app = builder.Build();
 
+// 確保資料庫和資料表存在
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<WeatherDbContext>();
+    dbContext.Database.EnsureCreated();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
