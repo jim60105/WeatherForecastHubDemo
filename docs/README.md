@@ -164,6 +164,95 @@ public class WeatherDbContext : DbContext
 5. 開發前端介面與 API 整合
 6. 測試與改進
 
+## 專案安裝與執行指南
+
+要開始使用這個專案，請按照以下步驟進行操作：
+
+### 1. 安裝 .NET 9 SDK
+
+首先，您需要安裝 .NET 9 SDK：
+
+- **Windows**：從 [Microsoft 官方網站](https://dotnet.microsoft.com/download/dotnet/9.0) 下載並安裝
+- **macOS**：使用 Homebrew 安裝：
+  ```bash
+  brew install dotnet-sdk-9.0
+  ```
+- **Linux (Ubuntu/Debian)**：
+  ```bash
+  wget https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+  sudo dpkg -i packages-microsoft-prod.deb
+  sudo apt-get update
+  sudo apt-get install -y dotnet-sdk-9.0
+  ```
+
+安裝完成後，可以在終端機中驗證安裝：
+```bash
+dotnet --version
+```
+
+> 💡 **學習提示**：.NET SDK 包含開發、建構與執行 .NET 應用所需的所有工具
+
+### 2. 下載專案
+
+複製 (clone) 專案到您的本機：
+
+```bash
+git clone https://github.com/jim60105/WeatherForecastHubDemo.git
+cd WeatherForecastHub
+```
+
+### 3. 設定 appsettings.json
+
+1. 在專案根目錄中找到 `appsettings.json` 檔案
+2. 修改 API 金鑰設定：
+   - 註冊 [中央氣象署開放資料平臺](https://opendata.cwa.gov.tw/) 取得 API 金鑰
+   - 將您的 API 金鑰填入 `CWAApi.ApiKey` 欄位
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Data Source=WeatherForecast.db"
+  },
+  "CWAApi": {
+    "BaseUrl": "https://opendata.cwa.gov.tw/api/v1/",
+    "ApiKey": "在這裡填入您的API金鑰"
+  }
+}
+```
+
+> 💡 **學習提示**：`appsettings.json` 是 .NET 專案儲存設定值的標準方式，包括連線字串和 API 金鑰等
+
+### 4. 執行專案
+
+在專案根目錄執行以下命令：
+
+```bash
+# 恢復相依套件
+dotnet restore
+
+# 建構專案
+dotnet build
+
+# 執行專案
+dotnet run
+```
+
+專案啟動後，您可以在瀏覽器中開啟以下網址：
+
+- **前端介面**：`http://localhost:5105`
+- **Swagger API 文件**：`http://localhost:5105/swagger`
+
+> 💡 **學習提示**：
+> - `dotnet restore` 下載專案需要的相依套件
+> - `dotnet build` 編譯專案
+> - `dotnet run` 執行應用程式
+
+### 5. 資料庫初始化
+
+第一次執行時，Entity Framework Core 會自動建立 SQLite 資料庫檔案 (WeatherForecast.db)。您不需要手動設定資料庫。
+
+> 💡 **學習提示**：這是 EF Core 的 Code First 遷移功能，從程式碼自動建立資料庫結構
+
 ## 學習資源
 
 - [.NET Web API 官方文件](https://learn.microsoft.com/zh-tw/aspnet/core/web-api/?view=aspnetcore-9.0)
