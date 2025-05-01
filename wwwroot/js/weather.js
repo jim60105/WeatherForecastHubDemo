@@ -69,19 +69,212 @@ class WeatherManager {
             return;
         }
         
-        // 顯示城市資訊
+        // 顯示城市名稱並建立多個折線圖
         const cityName = weatherData[0].cityName;
-        const cityInfoElement = document.createElement('div');
-        cityInfoElement.className = 'col-span-full mb-4';
-        cityInfoElement.innerHTML = `
-            <h3 class="text-xl font-semibold">${cityName}</h3>
+        this.forecastContainer.innerHTML = `
+            <div class="col-span-full mb-4">
+                <h3 class="text-xl font-semibold">${cityName}</h3>
+            </div>
+            <div class="col-span-full grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="humidityChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="windSpeedChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="rainProbabilityChart"></canvas>
+                </div>
+            </div>
         `;
-        this.forecastContainer.appendChild(cityInfoElement);
+        // 準備圖表資料
+        const labels = weatherData.map(f => this.formatDate(new Date(f.date)));
+        const temperatures = weatherData.map(f => f.temperature);
+        const humidity = weatherData.map(f => f.humidity);
+        const windSpeed = weatherData.map(f => f.windSpeed);
+        const rainProbability = weatherData.map(f => f.rainProbability);
         
-        // 建立每日預報卡片
-        weatherData.forEach(forecast => {
-            const forecastCard = this.createForecastCard(forecast);
-            this.forecastContainer.appendChild(forecastCard);
+        // 溫度圖表
+        const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+        new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '溫度 (°C)',
+                        data: temperatures,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '溫度變化'
+                    }
+                },
+                scales: {
+                    x: { 
+                        display: true, 
+                        title: { 
+                            display: true, 
+                            text: '日期' 
+                        } 
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '溫度 (°C)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 濕度圖表
+        const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+        new Chart(humidityCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '濕度 (%)',
+                        data: humidity,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '濕度變化'
+                    }
+                },
+                scales: {
+                    x: { 
+                        display: true, 
+                        title: { 
+                            display: true, 
+                            text: '日期' 
+                        } 
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '濕度 (%)'
+                        },
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
+        });
+        
+        // 風速圖表
+        const windSpeedCtx = document.getElementById('windSpeedChart').getContext('2d');
+        new Chart(windSpeedCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '風速 (m/s)',
+                        data: windSpeed,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '風速變化'
+                    }
+                },
+                scales: {
+                    x: { 
+                        display: true, 
+                        title: { 
+                            display: true, 
+                            text: '日期' 
+                        } 
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '風速 (m/s)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 降雨機率圖表
+        const rainProbabilityCtx = document.getElementById('rainProbabilityChart').getContext('2d');
+        new Chart(rainProbabilityCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '降雨機率 (%)',
+                        data: rainProbability,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '降雨機率變化'
+                    }
+                },
+                scales: {
+                    x: { 
+                        display: true, 
+                        title: { 
+                            display: true, 
+                            text: '日期' 
+                        } 
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '降雨機率 (%)'
+                        },
+                        min: 0,
+                        max: 100
+                    }
+                }
+            }
         });
     }
 
