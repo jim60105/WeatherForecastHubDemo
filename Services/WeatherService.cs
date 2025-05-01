@@ -1,6 +1,5 @@
-using System.Net.Http.Headers;
-using System.Text.Json;
 using WeatherForecastHub.Models;
+using WeatherForecastHub.Models.DTOs;
 using WeatherForecastHub.Repositories;
 
 namespace WeatherForecastHub.Services;
@@ -8,132 +7,250 @@ namespace WeatherForecastHub.Services;
 public class WeatherService : IWeatherService
 {
     private readonly ICityRepository _cityRepository;
-    private readonly HttpClient _httpClient;
+    private readonly HttpClient _client;
     private readonly IConfiguration _configuration;
     private readonly ILogger<WeatherService> _logger;
 
     public WeatherService(
         ICityRepository cityRepository,
-        HttpClient httpClient,
+        IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         ILogger<WeatherService> logger)
     {
         _cityRepository = cityRepository;
-        _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
-
-        // 設定 HttpClient
-        _httpClient.BaseAddress = new Uri("https://opendata.cwb.gov.tw/api/v1/");
-        _httpClient.DefaultRequestHeaders.Accept.Clear();
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        _client = httpClientFactory.CreateClient("CWA");
     }
 
     public async Task<IEnumerable<WeatherData>> GetWeatherForecastAsync(int cityId)
     {
-        _logger.LogInformation("正在取得城市 ID {CityId} 的天氣預報", cityId);
+        _logger.LogInformation(message: "正在取得城市 ID {CityId} 的天氣預報", cityId);
 
         // 從資料庫取得城市資訊
-        var city = await _cityRepository.GetCityByIdAsync(cityId);
+        City? city = await _cityRepository.GetCityByIdAsync(cityId);
         if (city == null)
         {
-            _logger.LogWarning("找不到 ID 為 {CityId} 的城市", cityId);
+            _logger.LogWarning(message: "找不到 ID 為 {CityId} 的城市", cityId);
             throw new KeyNotFoundException($"找不到 ID 為 {cityId} 的城市");
         }
 
         try
         {
             // 從中央氣象署 API 取得天氣預報
-            var forecast = await GetWeatherForecastFromApiAsync(city.Name);
-            
+            IEnumerable<WeatherData> forecast = await GetWeatherForecastFromApiAsync(city.Name);
+
             // 將城市名稱附加到每個預報資料項目
-            var result = forecast.Select(f =>
+            IEnumerable<WeatherData> result = forecast.Select(f =>
             {
                 f.CityName = city.Name;
                 return f;
             });
-            
+
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "取得城市 {CityName} (ID: {CityId}) 的天氣預報時發生錯誤", 
-                city.Name, cityId);
+            _logger.LogError(exception: ex,
+                             message: "取得城市 {CityName} (ID: {CityId}) 的天氣預報時發生錯誤",
+                             city.Name,
+                             cityId);
+
             throw;
         }
     }
 
     private async Task<IEnumerable<WeatherData>> GetWeatherForecastFromApiAsync(string cityName)
     {
-        _logger.LogInformation("正在從中央氣象署 API 取得城市名稱為 {CityName} 的天氣預報", cityName);
-        
+        if (string.IsNullOrEmpty(cityName))
+        {
+            _logger.LogWarning("請求中缺少城市名稱");
+            return Enumerable.Empty<WeatherData>();
+        }
+
+        var weatherDataList = new List<WeatherData>();
+
         try
         {
-            var apiKey = _configuration["WeatherApi:ApiKey"];
-            if (string.IsNullOrEmpty(apiKey))
+            string apiKey = _configuration["CWAApi:ApiKey"] ?? "";
+            var requestUrl = $"rest/datastore/F-D0047-089?Authorization={apiKey}&LocationName={cityName}";
+
+            // 發送請求至中央氣象署 API
+            HttpResponseMessage response = await _client.GetAsync(requestUrl);
+            response.EnsureSuccessStatusCode();
+
+            // 解析 API 回應
+            string responseContent = await response.Content.ReadAsStringAsync();
+            CwbApiResponse? apiResponse = JsonSerializer.Deserialize<CwbApiResponse>(json: responseContent,
+                                                                                     options: new JsonSerializerOptions
+                                                                                     {
+                                                                                         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                                                                                     });
+
+            if (apiResponse?.Records?.Locations != null)
             {
-                _logger.LogError("找不到中央氣象署 API 金鑰");
-                throw new InvalidOperationException("找不到中央氣象署 API 金鑰");
+                // 從回應中獲取資料
+                List<Location>? locationData = apiResponse.Records.Locations.FirstOrDefault()?.Location;
+                if (locationData != null && locationData.Count > 0)
+                    foreach (Location location in locationData)
+                    {
+                        if (location.WeatherElement == null) continue;
+
+                        // 找出各種氣象要素
+                        WeatherElement? temperatureElement = location.WeatherElement.FirstOrDefault(w => w.ElementName == "溫度");
+                        WeatherElement? humidityElement = location.WeatherElement.FirstOrDefault(w => w.ElementName == "相對濕度");
+                        WeatherElement? windSpeedElement = location.WeatherElement.FirstOrDefault(w => w.ElementName == "風速");
+                        WeatherElement? rainProbabilityElement = location.WeatherElement.FirstOrDefault(w => w.ElementName == "3小時降雨機率");
+                        WeatherElement? weatherConditionElement = location.WeatherElement.FirstOrDefault(w => w.ElementName == "天氣現象");
+
+                        // 確保至少有時間和溫度資料
+                        if (temperatureElement?.Time != null && temperatureElement.Time.Count > 0)
+                            // 處理每個時間點的資料
+                            foreach (Time timePoint in temperatureElement.Time)
+                            {
+                                // 確定時間點
+                                DateTime forecastDateTime;
+                                if (!string.IsNullOrEmpty(timePoint.StartTime))
+                                    forecastDateTime = DateTime.Parse(timePoint.StartTime!);
+                                else if (!string.IsNullOrEmpty(timePoint.DataTime))
+                                    forecastDateTime = DateTime.Parse(timePoint.DataTime!);
+                                else
+                                    continue; // 跳過無效時間點
+
+                                // 處理溫度資料
+                                double temperature = 0;
+                                var hasData = false;
+                                if (timePoint.ElementValue != null && timePoint.ElementValue.Any())
+                                {
+                                    string? tempValue = timePoint.ElementValue.FirstOrDefault(ev => !string.IsNullOrEmpty(ev.Temperature))
+                                                                 ?.Temperature;
+
+                                    if (!string.IsNullOrEmpty(tempValue) && double.TryParse(s: tempValue, result: out double temp) && temp > 0)
+                                    {
+                                        temperature = temp;
+                                        hasData = true;
+                                    }
+                                }
+
+                                if (!hasData) continue; // 如果沒有溫度資料，跳過此時間點
+
+                                // 處理濕度資料
+                                double humidity = 0;
+                                if (humidityElement?.Time != null)
+                                {
+                                    Time? humidTimePoint = FindMatchingTimePoint(timePoints: humidityElement.Time, targetDateTime: forecastDateTime);
+                                    if (humidTimePoint?.ElementValue != null && humidTimePoint.ElementValue.Any())
+                                    {
+                                        string? humidValue = humidTimePoint.ElementValue
+                                                                           .FirstOrDefault(ev => !string.IsNullOrEmpty(ev.RelativeHumidity))
+                                                                           ?.RelativeHumidity;
+
+                                        if (!string.IsNullOrEmpty(humidValue) && double.TryParse(s: humidValue, result: out double humid)
+                                                                              && humid > 0) humidity = humid;
+                                    }
+                                }
+
+                                // 處理風速資料
+                                double windSpeed = 0;
+                                if (windSpeedElement?.Time != null)
+                                {
+                                    Time? windTimePoint = FindMatchingTimePoint(timePoints: windSpeedElement.Time, targetDateTime: forecastDateTime);
+                                    if (windTimePoint?.ElementValue != null && windTimePoint.ElementValue.Any())
+                                    {
+                                        string? windValue = windTimePoint.ElementValue.FirstOrDefault(ev => !string.IsNullOrEmpty(ev.WindSpeed))
+                                                                         ?.WindSpeed;
+
+                                        if (!string.IsNullOrEmpty(windValue) && double.TryParse(s: windValue, result: out double wind) && wind > 0)
+                                            windSpeed = wind;
+                                    }
+                                }
+
+                                // 處理降雨機率資料
+                                double rainProbability = 0;
+                                if (rainProbabilityElement?.Time != null)
+                                {
+                                    Time? rainTimePoint =
+                                        FindMatchingTimePoint(timePoints: rainProbabilityElement.Time, targetDateTime: forecastDateTime);
+
+                                    if (rainTimePoint?.ElementValue != null && rainTimePoint.ElementValue.Any())
+                                    {
+                                        string? rainValue = rainTimePoint.ElementValue
+                                                                         .FirstOrDefault(ev => !string.IsNullOrEmpty(ev.ProbabilityOfPrecipitation))
+                                                                         ?.ProbabilityOfPrecipitation;
+
+                                        if (!string.IsNullOrEmpty(rainValue) && double.TryParse(s: rainValue, result: out double rain) && rain >= 0)
+                                            rainProbability = rain;
+                                    }
+                                }
+
+                                // 處理天氣狀況
+                                var weatherCondition = "未知";
+                                if (weatherConditionElement?.Time != null)
+                                {
+                                    Time? weatherTimePoint =
+                                        FindMatchingTimePoint(timePoints: weatherConditionElement.Time, targetDateTime: forecastDateTime);
+
+                                    if (weatherTimePoint?.ElementValue != null && weatherTimePoint.ElementValue.Any())
+                                    {
+                                        string? weatherValue = weatherTimePoint.ElementValue.FirstOrDefault(ev => !string.IsNullOrEmpty(ev.Weather))
+                                                                               ?.Weather;
+
+                                        if (!string.IsNullOrEmpty(weatherValue)) weatherCondition = weatherValue;
+                                    }
+                                }
+
+                                // 建立天氣資料物件
+                                weatherDataList.Add(new WeatherData
+                                {
+                                    LocationId = location.LocationName ?? cityName,
+                                    Datetime = forecastDateTime,
+                                    Temperature = Math.Round(value: temperature, digits: 1),
+                                    Humidity = Math.Round(value: humidity, digits: 1),
+                                    WindSpeed = Math.Round(value: windSpeed, digits: 1),
+                                    RainProbability = Math.Round(value: rainProbability, digits: 1),
+                                    WeatherCondition = weatherCondition
+                                });
+                            }
+                    }
             }
 
-            // 建構 API 請求 URL
-            // 這裡假設我們想取得未來 3 天的天氣預報
-            // 實際 URL 與參數需要根據中央氣象署 API 文件調整
-            var requestUrl = $"rest/datastore/F-D0047-089?Authorization={apiKey}&locationName={cityName}";
-            
-            // 發送請求
-            var response = await _httpClient.GetAsync(requestUrl);
-            
-            // 確保請求成功
-            response.EnsureSuccessStatusCode();
-            
-            // 解析回應資料
-            var content = await response.Content.ReadAsStringAsync();
-            var forecastData = JsonSerializer.Deserialize<CwbApiResponse>(content);
-            
-            if (forecastData == null || forecastData.Records == null || forecastData.Records.Locations == null)
+            // 如果無法解析資料，記錄警告
+            if (!weatherDataList.Any())
             {
-                _logger.LogWarning("從中央氣象署 API 獲取的資料為空或格式不正確");
+                _logger.LogWarning("無法從中央氣象署 API 回應中解析出有效的天氣資料");
+
+                // 回傳空資料
                 return Enumerable.Empty<WeatherData>();
             }
 
-            // 轉換 API 回應為我們的模型資料
-            // 這裡的轉換邏輯需要根據實際 API 回應調整
-            var weatherDataList = new List<WeatherData>();
-            
-            // 模擬從 API 回應中解析資料
-            // 實際解析邏輯需根據中央氣象署 API 回應格式調整
-            for (int i = 0; i < 3; i++) // 假設我們只要 3 天的預報
-            {
-                var date = DateTime.Today.AddDays(i);
-                weatherDataList.Add(new WeatherData
-                {
-                    LocationId = cityName,
-                    Date = date,
-                    Temperature = 25 + i, // 模擬溫度值
-                    Humidity = 60 - i * 2, // 模擬濕度值
-                    WindSpeed = 3 + i * 0.5, // 模擬風速值
-                    RainProbability = 20 + i * 5, // 模擬降雨機率
-                    WeatherCondition = "晴時多雲" // 模擬天氣狀況
-                });
-            }
-            
             return weatherDataList;
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "向中央氣象署 API 發送請求時發生錯誤");
+            _logger.LogError(exception: ex, message: "向中央氣象署 API 發送請求時發生錯誤");
             throw;
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "解析中央氣象署 API 回應時發生錯誤");
+            _logger.LogError(exception: ex, message: "解析中央氣象署 API 回應時發生錯誤");
             throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "取得天氣預報時發生未知錯誤");
+            _logger.LogError(exception: ex, message: "處理天氣預報資料時發生未預期錯誤");
             throw;
         }
+    }
+
+    // 根據時間點找到匹配的資料
+    private Time? FindMatchingTimePoint(List<Time> timePoints, DateTime targetDateTime)
+    {
+        return timePoints.FirstOrDefault(t =>
+        {
+            if (!string.IsNullOrEmpty(t.StartTime)) return DateTime.Parse(t.StartTime!) == targetDateTime;
+
+            if (!string.IsNullOrEmpty(t.DataTime)) return DateTime.Parse(t.DataTime!) == targetDateTime;
+            return false;
+        });
     }
 }

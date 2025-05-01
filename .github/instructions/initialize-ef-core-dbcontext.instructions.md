@@ -6,7 +6,7 @@
     git status
     ```
 
-    If the working directory is not clean, please stop execution.
+   If the working directory is not clean, please stop execution.
 
 ## Steps
 
@@ -15,7 +15,7 @@
     ```ps1
     efcpt "Server=(localdb)\MSSQLLocalDB;Initial Catalog=ContosoUniversity;Trusted_Connection=True;Encrypt=false" mssql
     ```
-     (Note: This is the connection string of MSSQL. You should use the correct ConnectionString according to the project requirements.)
+   (Note: This is the connection string of MSSQL. You should use the correct ConnectionString according to the project requirements.)
 
 2. Run `dotnet build` to make sure everything is all right.
 

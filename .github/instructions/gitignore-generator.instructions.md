@@ -125,5 +125,5 @@
     ```bash
     curl -sL https://www.toptal.com/developers/gitignore/api/{template_id} > .gitignore
     ```
-    
+
 3. Verify the `.gitignore` file has been created successfully.

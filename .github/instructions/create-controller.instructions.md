@@ -18,39 +18,39 @@
 
 5. Add `OperationId` to each Action method in the Controller. That is required for OpenAPI spec.
 
-    For example, the `GET` action's Action Method Selector below:
+   For example, the `GET` action's Action Method Selector below:
 
     ```cs
     [HttpGet]
     ```
 
-    After adding `OperationId`, it become:
+   After adding `OperationId`, it become:
 
     ```cs
     [HttpGet(Name = "GetCourses")]
     ```
 
-    Please give `OperationId` a meaningful name.
+   Please give `OperationId` a meaningful name.
 
 6. Apply `[ProducesResponseType]` attribute to each Actions that reflect it's API behavior.
 
 7. Edit `coursemanagement.http` so that I can test these APIs easily.
 
-    Do not touch the existing `@HostAddress` varable definition. It's been fixed.
+   Do not touch the existing `@HostAddress` varable definition. It's been fixed.
 
-    Make sure use `HostAddress` variable.
+   Make sure use `HostAddress` variable.
 
-    Reference related Entity Class for the test payload.
+   Reference related Entity Class for the test payload.
 
-    When writing POST method, don't add Primary Key from the entity.
+   When writing POST method, don't add Primary Key from the entity.
 
 8. Run `dotnet build` to make sure everything is all right.
 
-9.  Add `Swashbuckle.AspNetCore.SwaggerUI` package
+9. Add `Swashbuckle.AspNetCore.SwaggerUI` package
 
-    ```sh
-    dotnet add package Swashbuckle.AspNetCore.SwaggerUI
-    ```
+   ```sh
+   dotnet add package Swashbuckle.AspNetCore.SwaggerUI
+   ```
 
 10. Add the following code only to the #file:Program.cs
 

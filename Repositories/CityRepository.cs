@@ -22,13 +22,13 @@ public class CityRepository : ICityRepository
 
     public async Task<City?> GetCityByIdAsync(int id)
     {
-        _logger.LogInformation("正在取得 ID 為 {Id} 的城市", id);
+        _logger.LogInformation(message: "正在取得 ID 為 {Id} 的城市", id);
         return await _context.Cities.FindAsync(id);
     }
 
     public async Task<City> AddCityAsync(City city)
     {
-        _logger.LogInformation("正在新增城市: {Name}", city.Name);
+        _logger.LogInformation(message: "正在新增城市: {Name}", city.Name);
         _context.Cities.Add(city);
         await _context.SaveChangesAsync();
         return city;
@@ -36,29 +36,29 @@ public class CityRepository : ICityRepository
 
     public async Task<City?> UpdateCityAsync(City city)
     {
-        _logger.LogInformation("正在更新 ID 為 {Id} 的城市", city.Id);
-        
-        var existingCity = await _context.Cities.FindAsync(city.Id);
+        _logger.LogInformation(message: "正在更新 ID 為 {Id} 的城市", city.Id);
+
+        City? existingCity = await _context.Cities.FindAsync(city.Id);
         if (existingCity == null)
         {
-            _logger.LogWarning("找不到 ID 為 {Id} 的城市", city.Id);
+            _logger.LogWarning(message: "找不到 ID 為 {Id} 的城市", city.Id);
             return null;
         }
 
         existingCity.Name = city.Name;
-        
+
         await _context.SaveChangesAsync();
         return existingCity;
     }
 
     public async Task<bool> DeleteCityAsync(int id)
     {
-        _logger.LogInformation("正在刪除 ID 為 {Id} 的城市", id);
-        
-        var city = await _context.Cities.FindAsync(id);
+        _logger.LogInformation(message: "正在刪除 ID 為 {Id} 的城市", id);
+
+        City? city = await _context.Cities.FindAsync(id);
         if (city == null)
         {
-            _logger.LogWarning("找不到 ID 為 {Id} 的城市", id);
+            _logger.LogWarning(message: "找不到 ID 為 {Id} 的城市", id);
             return false;
         }
 

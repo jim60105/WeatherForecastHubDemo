@@ -1,10 +1,11 @@
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authentication;
+using WeatherForecastHub.Authentication;
 using WeatherForecastHub.Data;
 using WeatherForecastHub.Repositories;
 using WeatherForecastHub.Services;
-using Microsoft.AspNetCore.Authentication;
-using WeatherForecastHub.Authentication;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
@@ -14,13 +15,12 @@ builder.Services.AddOpenApi();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // 新增基本身份驗證設定，但不實際要求驗證
-builder.Services.AddAuthentication(options => {
-    options.DefaultScheme = "NoAuth";
-}).AddScheme<AuthenticationSchemeOptions, NoAuthHandler>("NoAuth", options => { });
+builder.Services.AddAuthentication(options => { options.DefaultScheme = "NoAuth"; })
+       .AddScheme<AuthenticationSchemeOptions, NoAuthHandler>(authenticationScheme: "NoAuth", options => { });
 
 // 設定資料庫連線
 builder.Services.AddDbContext<WeatherDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+                                                    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 註冊 Repository 層
 builder.Services.AddScoped<ICityRepository, CityRepository>();
@@ -30,14 +30,22 @@ builder.Services.AddScoped<ICityService, CityService>();
 builder.Services.AddScoped<IWeatherService, WeatherService>();
 
 // 註冊 HttpClient
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(name: "CWA",
+                               httpClient =>
+                               {
+                                   httpClient.BaseAddress = new Uri(builder.Configuration.GetValue<string>("CWAApi:BaseUrl")
+                                                                    ?? "https://opendata.cwa.gov.tw/api/v1/");
 
-var app = builder.Build();
+                                   httpClient.DefaultRequestHeaders.Accept.Clear();
+                                   httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                               });
+
+WebApplication app = builder.Build();
 
 // 確保資料庫和資料表存在
-using (var scope = app.Services.CreateScope())
+using (IServiceScope scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<WeatherDbContext>();
+    WeatherDbContext dbContext = scope.ServiceProvider.GetRequiredService<WeatherDbContext>();
     dbContext.Database.EnsureCreated();
 }
 
@@ -45,10 +53,7 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "OpenAPI V1");
-    });
+    app.UseSwaggerUI(options => { options.SwaggerEndpoint(url: "/openapi/v1.json", name: "OpenAPI V1"); });
 }
 
 // 啟用靜態檔案服務
@@ -64,6 +69,6 @@ app.UseAuthorization();
 app.MapControllers().WithGroupName("api");
 
 // 定義一個簡單的端點，將根路徑重定向到 Swagger UI
-app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapGet(pattern: "/", () => Results.Redirect("/swagger"));
 
 app.Run();

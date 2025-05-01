@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace WeatherForecastHub.Authentication;
 
 /// <summary>
-/// 不做實際驗證的身份驗證處理器，用於解決身份驗證相關的系統例外
+///     不做實際驗證的身份驗證處理器，用於解決身份驗證相關的系統例外
 /// </summary>
 public class NoAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
@@ -14,7 +14,7 @@ public class NoAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+        ISystemClock clock) : base(options: options, logger: logger, encoder: encoder, clock: clock)
     {
     }
 
@@ -22,7 +22,7 @@ public class NoAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         // 永遠回傳成功，但不包含任何實際身份資訊
         var principal = new ClaimsPrincipal(new ClaimsIdentity());
-        var ticket = new AuthenticationTicket(principal, "NoAuth");
+        var ticket = new AuthenticationTicket(principal: principal, authenticationScheme: "NoAuth");
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }

@@ -7864,7 +7864,7 @@ paths:
 
         - name: Date
           in: query
-          description:  |
+          description: |
             時間因子, 格式為「yyyy-MM-dd」, 最多回傳180筆資料
             預設回傳內容之最初180筆的資料
           required: false
@@ -7911,7 +7911,7 @@ paths:
 
         - name: timeTo
           in: query
-          description:  |
+          description: |
             時間區段, 篩選需要之時間區段,格式為「yyyy-MM-dd」
 
             時間從「timeTo」之前180天開始篩選,直到「timeTo」

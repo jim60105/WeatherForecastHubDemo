@@ -8,7 +8,7 @@ please do git commit for each step when you run command of edit files. If nothin
     git --version
     ```
 
-    If there is no Git CLI been installed, please stop execution.
+   If there is no Git CLI been installed, please stop execution.
 
 2. Make sure the working tree is clean.
 
@@ -16,7 +16,7 @@ please do git commit for each step when you run command of edit files. If nothin
     git status
     ```
 
-    If the working directory is not clean, please stop execution.
+   If the working directory is not clean, please stop execution.
 
 3. Check for .NET SDK version. It must be larger than `9.0.100`.
 
@@ -38,7 +38,7 @@ please do git commit for each step when you run command of edit files. If nothin
     efcpt --version
     ```
 
-    If efcpt is not installed yet, or if the version is lower than `9.1.807`, please reinstall to the latest version:
+   If efcpt is not installed yet, or if the version is lower than `9.1.807`, please reinstall to the latest version:
 
     ```ps1
     dotnet tool update ErikEJ.EFCorePowerTools.Cli -g --version 9.*
@@ -46,7 +46,7 @@ please do git commit for each step when you run command of edit files. If nothin
 
 7. Setup C# Global Usings in the project.
 
-    The filename must be `GlobalUsings.cs`. Add some common namespace to it.
+   The filename must be `GlobalUsings.cs`. Add some common namespace to it.
 
 8. Add `.gitignore` file
 
@@ -56,7 +56,7 @@ please do git commit for each step when you run command of edit files. If nothin
 
 9. Add `.gitattributes` file that avoid cross-platform issues.
 
-    Here is the default template for `.gitattributes`. Add the content to the `.gitattributes` file.
+   Here is the default template for `.gitattributes`. Add the content to the `.gitattributes` file.
 
     ```txt
     # Set default behavior to automatically normalize line endings.
@@ -83,7 +83,7 @@ please do git commit for each step when you run command of edit files. If nothin
     *.gif binary
     ```
 
-    > Reference: [.gitattributes Best Practices](https://rehansaeed.com/gitattributes-best-practices/)
+   > Reference: [.gitattributes Best Practices](https://rehansaeed.com/gitattributes-best-practices/)
 
 10. Download editorconfig from this url
 
