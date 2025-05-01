@@ -1,6 +1,4 @@
 using System.Net.Http.Headers;
-using Microsoft.AspNetCore.Authentication;
-using WeatherForecastHub.Authentication;
 using WeatherForecastHub.Data;
 using WeatherForecastHub.Repositories;
 using WeatherForecastHub.Services;
@@ -13,10 +11,6 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-
-// 新增基本身份驗證設定，但不實際要求驗證
-builder.Services.AddAuthentication(options => { options.DefaultScheme = "NoAuth"; })
-       .AddScheme<AuthenticationSchemeOptions, NoAuthHandler>(authenticationScheme: "NoAuth", options => { });
 
 // 設定資料庫連線
 builder.Services.AddDbContext<WeatherDbContext>(options =>
@@ -60,10 +54,6 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
-
-// 啟用身份驗證中介軟體
-app.UseAuthentication();
-app.UseAuthorization();
 
 // 設定控制器路由前綴為 /api
 app.MapControllers().WithGroupName("api");
