@@ -37,12 +37,6 @@ public class CityService : ICityService
             throw new ArgumentException("城市名稱不能為空", nameof(city.Name));
         }
 
-        if (string.IsNullOrWhiteSpace(city.LocationId))
-        {
-            _logger.LogWarning("LocationId 不能為空");
-            throw new ArgumentException("LocationId 不能為空", nameof(city.LocationId));
-        }
-
         return await _cityRepository.AddCityAsync(city);
     }
 
@@ -61,12 +55,6 @@ public class CityService : ICityService
         {
             _logger.LogWarning("城市名稱不能為空");
             throw new ArgumentException("城市名稱不能為空", nameof(city.Name));
-        }
-
-        if (string.IsNullOrWhiteSpace(city.LocationId))
-        {
-            _logger.LogWarning("LocationId 不能為空");
-            throw new ArgumentException("LocationId 不能為空", nameof(city.LocationId));
         }
 
         return await _cityRepository.UpdateCityAsync(city);

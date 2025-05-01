@@ -26,7 +26,6 @@ public class WeatherDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100).IsRequired();
-            entity.Property(e => e.LocationId).HasMaxLength(20).IsRequired();
         });
     }
 }

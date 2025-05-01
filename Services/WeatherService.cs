@@ -44,7 +44,7 @@ public class WeatherService : IWeatherService
         try
         {
             // 從中央氣象署 API 取得天氣預報
-            var forecast = await GetWeatherForecastFromApiAsync(city.LocationId);
+            var forecast = await GetWeatherForecastFromApiAsync(city.Name);
             
             // 將城市名稱附加到每個預報資料項目
             var result = forecast.Select(f =>
@@ -63,9 +63,9 @@ public class WeatherService : IWeatherService
         }
     }
 
-    private async Task<IEnumerable<WeatherData>> GetWeatherForecastFromApiAsync(string locationId)
+    private async Task<IEnumerable<WeatherData>> GetWeatherForecastFromApiAsync(string cityName)
     {
-        _logger.LogInformation("正在從中央氣象署 API 取得 LocationId 為 {LocationId} 的天氣預報", locationId);
+        _logger.LogInformation("正在從中央氣象署 API 取得城市名稱為 {CityName} 的天氣預報", cityName);
         
         try
         {
@@ -79,7 +79,7 @@ public class WeatherService : IWeatherService
             // 建構 API 請求 URL
             // 這裡假設我們想取得未來 3 天的天氣預報
             // 實際 URL 與參數需要根據中央氣象署 API 文件調整
-            var requestUrl = $"rest/datastore/F-D0047-091?Authorization={apiKey}&locationId={locationId}&elementName=MinT,MaxT,PoP12h,Wx,WS,RH";
+            var requestUrl = $"rest/datastore/F-D0047-089?Authorization={apiKey}&locationName={cityName}";
             
             // 發送請求
             var response = await _httpClient.GetAsync(requestUrl);
@@ -108,7 +108,7 @@ public class WeatherService : IWeatherService
                 var date = DateTime.Today.AddDays(i);
                 weatherDataList.Add(new WeatherData
                 {
-                    LocationId = locationId,
+                    LocationId = cityName,
                     Date = date,
                     Temperature = 25 + i, // 模擬溫度值
                     Humidity = 60 - i * 2, // 模擬濕度值

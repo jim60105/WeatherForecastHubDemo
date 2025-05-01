@@ -32,8 +32,7 @@ public class CitiesController : ControllerBase
         var cityDtos = cities.Select(c => new CityDto
         {
             Id = c.Id,
-            Name = c.Name,
-            LocationId = c.LocationId
+            Name = c.Name
         });
         
         return Ok(cityDtos);
@@ -61,8 +60,7 @@ public class CitiesController : ControllerBase
         var cityDto = new CityDto
         {
             Id = city.Id,
-            Name = city.Name,
-            LocationId = city.LocationId
+            Name = city.Name
         };
         
         return Ok(cityDto);
@@ -88,8 +86,7 @@ public class CitiesController : ControllerBase
         {
             var city = new City
             {
-                Name = createCityDto.Name,
-                LocationId = createCityDto.LocationId
+                Name = createCityDto.Name
             };
 
             var createdCity = await _cityService.AddCityAsync(city);
@@ -97,8 +94,7 @@ public class CitiesController : ControllerBase
             var cityDto = new CityDto
             {
                 Id = createdCity.Id,
-                Name = createdCity.Name,
-                LocationId = createdCity.LocationId
+                Name = createdCity.Name
             };
 
             return CreatedAtAction(nameof(GetCity), new { id = cityDto.Id }, cityDto);
@@ -138,8 +134,7 @@ public class CitiesController : ControllerBase
             var city = new City
             {
                 Id = id,
-                Name = updateCityDto.Name,
-                LocationId = updateCityDto.LocationId
+                Name = updateCityDto.Name
             };
 
             var updatedCity = await _cityService.UpdateCityAsync(city);
@@ -152,8 +147,7 @@ public class CitiesController : ControllerBase
             var cityDto = new CityDto
             {
                 Id = updatedCity.Id,
-                Name = updatedCity.Name,
-                LocationId = updatedCity.LocationId
+                Name = updatedCity.Name
             };
 
             return Ok(cityDto);

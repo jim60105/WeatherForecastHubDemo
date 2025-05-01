@@ -46,7 +46,6 @@ public class CityRepository : ICityRepository
         }
 
         existingCity.Name = city.Name;
-        existingCity.LocationId = city.LocationId;
         
         await _context.SaveChangesAsync();
         return existingCity;
