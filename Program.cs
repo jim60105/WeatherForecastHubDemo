@@ -58,7 +58,10 @@ app.UseHttpsRedirection();
 // 設定控制器路由前綴為 /api
 app.MapControllers().WithGroupName("api");
 
-// 定義一個簡單的端點，將根路徑重定向到 Swagger UI
-app.MapGet(pattern: "/", () => Results.Redirect("/swagger"));
+// 定義一個簡單的端點，將根路徑重定向到我們的前端頁面
+app.MapGet(pattern: "/", () => Results.Redirect("/index.html"));
+
+// 保留 Swagger 路由
+app.MapGet(pattern: "/swagger", () => Results.Redirect("/swagger/index.html"));
 
 app.Run();
