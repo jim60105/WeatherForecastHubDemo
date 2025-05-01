@@ -36,8 +36,8 @@ public class WeatherController : ControllerBase
 
             IEnumerable<WeatherForecastDto> forecastDtos = forecast.Select(f => new WeatherForecastDto
             {
+                Id = f.Id,
                 CityName = f.CityName,
-                LocationId = f.LocationId,
                 Date = f.Datetime,
                 Temperature = f.Temperature,
                 Humidity = f.Humidity,
