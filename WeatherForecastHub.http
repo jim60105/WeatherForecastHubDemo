@@ -1,6 +1,35 @@
-@WeatherForecastHub_HostAddress = http://localhost:5105
+@HostAddress = http://localhost:5105
 
-GET {{WeatherForecastHub_HostAddress}}/weatherforecast/
+### 取得所有城市
+GET {{HostAddress}}/api/cities
 Accept: application/json
 
-###
+### 根據 ID 取得單一城市
+GET {{HostAddress}}/api/cities/1
+Accept: application/json
+
+### 新增城市
+POST {{HostAddress}}/api/cities
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "臺北市"
+}
+
+### 更新城市
+PUT {{HostAddress}}/api/cities/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "新北市"
+}
+
+### 刪除城市
+DELETE {{HostAddress}}/api/cities/1
+Accept: application/json
+
+### 取得指定城市的天氣預報
+GET {{HostAddress}}/api/weather/1
+Accept: application/json
