@@ -1,4 +1,4 @@
-@HostAddress = https://localhost:7173
+@HostAddress = http://localhost:5105
 
 ### 取得所有城市
 GET {{HostAddress}}/api/cities

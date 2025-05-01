@@ -1,6 +1,8 @@
 using WeatherForecastHub.Data;
 using WeatherForecastHub.Repositories;
 using WeatherForecastHub.Services;
+using Microsoft.AspNetCore.Authentication;
+using WeatherForecastHub.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,11 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
+
+// 新增基本身份驗證設定，但不實際要求驗證
+builder.Services.AddAuthentication(options => {
+    options.DefaultScheme = "NoAuth";
+}).AddScheme<AuthenticationSchemeOptions, NoAuthHandler>("NoAuth", options => { });
 
 // 設定資料庫連線
 builder.Services.AddDbContext<WeatherDbContext>(options =>
@@ -42,10 +49,12 @@ app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 
+// 啟用身份驗證中介軟體
+app.UseAuthentication();
 app.UseAuthorization();
 
 // 設定控制器路由前綴為 /api
-app.MapControllers().RequireAuthorization().WithGroupName("api");
+app.MapControllers().WithGroupName("api");
 
 // 定義一個簡單的端點，將根路徑重定向到 Swagger UI
 app.MapGet("/", () => Results.Redirect("/swagger"));
