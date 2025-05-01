@@ -6,24 +6,24 @@ applyTo: '**'
 ## 階段一：環境設定與專案初始化
 
 ### 後端設定
-- [ ] 建立 C# .NET 9 Web API 專案
-- [ ] 設定相依性注入容器
-- [ ] 建立資料夾結構 (Controllers, Services, Repositories, Models)
-- [ ] 設定 Swagger 文件
-- [ ] 設定 appsettings.json，包含資料庫連接字串和中央氣象署 API 金鑰
-- [ ] 設定靜態檔案中介軟體，將前端頁面提供在路徑根目錄
-- [ ] 設定 API 路由，確保所有 API 端點都在 `/api` 路徑之下
-- [ ] 安裝必要的 NuGet 套件：
-  - [ ] Entity Framework Core
-  - [ ] Microsoft.EntityFrameworkCore.Sqlite
-  - [ ] Microsoft.EntityFrameworkCore.Design
-  - [ ] Swashbuckle.AspNetCore
+- [x] 建立 C# .NET 9 Web API 專案
+- [x] 設定相依性注入容器
+- [x] 建立資料夾結構 (Controllers, Services, Repositories, Models)
+- [x] 設定 Swagger 文件
+- [x] 設定 appsettings.json，包含資料庫連接字串和中央氣象署 API 金鑰
+- [x] 設定靜態檔案中介軟體，將前端頁面提供在路徑根目錄
+- [x] 設定 API 路由，確保所有 API 端點都在 `/api` 路徑之下
+- [x] 安裝必要的 NuGet 套件：
+  - [x] Entity Framework Core
+  - [x] Microsoft.EntityFrameworkCore.Sqlite
+  - [x] Microsoft.EntityFrameworkCore.Design
+  - [x] Swashbuckle.AspNetCore
 
 ### 資料庫設定
-- [ ] 建立 WeatherDbContext 類別
-- [ ] 定義 City 實體類別
-- [ ] 設定 Entity Framework 遷移
-- [ ] 執行初始遷移建立資料庫
+- [x] 建立 WeatherDbContext 類別
+- [x] 定義 City 實體類別
+- [x] 設定 Entity Framework 遷移
+- [x] 執行初始遷移建立資料庫
 
 ## 階段二：後端功能實作
 
@@ -49,7 +49,7 @@ applyTo: '**'
   - [ ] 實作錯誤處理機制
 
 ### 控制器層 (Controller)
-- [ ] 設定控制器路由前綴為 `/api`
+- [x] 設定控制器路由前綴為 `/api`
 - [ ] 實作 CitiesController，包含：
   - [ ] GET /api/cities - 取得所有關注的城市
   - [ ] GET /api/cities/{id} - 取得指定 ID 的關注城市
