@@ -1,4 +1,6 @@
 using WeatherForecastHub.Data;
+using WeatherForecastHub.Repositories;
+using WeatherForecastHub.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,16 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 // 設定資料庫連線
 builder.Services.AddDbContext<WeatherDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// 註冊 Repository 層
+builder.Services.AddScoped<ICityRepository, CityRepository>();
+
+// 註冊 Service 層
+builder.Services.AddScoped<ICityService, CityService>();
+builder.Services.AddScoped<IWeatherService, WeatherService>();
+
+// 註冊 HttpClient
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

@@ -28,36 +28,33 @@ applyTo: '**'
 ## 階段二：後端功能實作
 
 ### 資料存取層 (Repository)
-- [ ] 建立 ICityRepository 介面
-- [ ] 實作 CityRepository 類別，包含：
-  - [ ] GetAllCities()
-  - [ ] GetCityById(int id)
-  - [ ] AddCity(City city)
-  - [ ] UpdateCity(City city)
-  - [ ] DeleteCity(int id)
-- [ ] 建立 IWeatherRepository 介面
-- [ ] 實作 WeatherRepository 類別，包含整合中央氣象署 API
+- [x] 建立 ICityRepository 介面
+- [x] 實作 CityRepository 類別，包含：
+  - [x] GetAllCities()
+  - [x] GetCityById(int id)
+  - [x] AddCity(City city)
+  - [x] UpdateCity(City city)
+  - [x] DeleteCity(int id)
 
 ### 服務層 (Service)
-- [ ] 建立 ICityService 介面
-- [ ] 實作 CityService 類別
-- [ ] 建立 IWeatherService 介面
-- [ ] 實作 WeatherService 類別，包含從 API 獲取資料並轉換為應用程式模型的邏輯
-  - [ ] 建立氣象署 API 服務類別
-  - [ ] 實作請求建構邏輯
-  - [ ] 處理 API 回應資料解析
-  - [ ] 實作錯誤處理機制
+- [x] 建立 ICityService 介面
+- [x] 實作 CityService 類別
+- [x] 建立 IWeatherService 介面
+- [x] 實作 WeatherService 類別，包含從 API 獲取資料並轉換為應用程式模型的邏輯
+  - [x] 實作請求建構邏輯
+  - [x] 處理 API 回應資料解析
+  - [x] 實作錯誤處理機制
 
 ### 控制器層 (Controller)
 - [x] 設定控制器路由前綴為 `/api`
-- [ ] 實作 CitiesController，包含：
-  - [ ] GET /api/cities - 取得所有關注的城市
-  - [ ] GET /api/cities/{id} - 取得指定 ID 的關注城市
-  - [ ] POST /api/cities - 新增關注的城市
-  - [ ] PUT /api/cities/{id} - 更新關注的城市
-  - [ ] DELETE /api/cities/{id} - 刪除關注的城市
-- [ ] 實作 WeatherController，包含：
-  - [ ] GET /api/weather/{cityId} - 取得指定城市的氣象預報資料
+- [x] 實作 CitiesController，包含：
+  - [x] GET /api/cities - 取得所有關注的城市
+  - [x] GET /api/cities/{id} - 取得指定 ID 的關注城市
+  - [x] POST /api/cities - 新增關注的城市
+  - [x] PUT /api/cities/{id} - 更新關注的城市
+  - [x] DELETE /api/cities/{id} - 刪除關注的城市
+- [x] 實作 WeatherController，包含：
+  - [x] GET /api/weather/{cityId} - 取得指定城市的氣象預報資料
 
 ## 階段三：前端開發
 
